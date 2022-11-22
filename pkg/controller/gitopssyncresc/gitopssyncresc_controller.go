@@ -19,9 +19,12 @@ package gitopssyncresc
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net"
+	"net/http"
 	"os"
 	"regexp"
 	"strings"
@@ -33,24 +36,29 @@ import (
 	"k8s.io/klog"
 	"k8s.io/utils/strings/slices"
 
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/client-go/rest"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	routev1 "github.com/openshift/api/route/v1"
 	"github.com/stolostron/search-v2-api/graph/model"
 	clusterv1 "open-cluster-management.io/api/cluster/v1"
 	appsetreport "open-cluster-management.io/multicloud-integrations/pkg/apis/appsetreport/v1alpha1"
+)
+
+const (
+	SearchServiceName = "search-search-api"
+	SearchDefaultNs   = "open-cluster-management"
+	AccessToken       = "ACCESS_TOKEN"
 )
 
 type GitOpsSyncResource struct {
 	Client      client.Client
 	Interval    int
 	ResourceDir string
+	Token       string
 }
 
 var ExcludeResourceList = []string{"ApplicationSet", "EndpointSlice"}
@@ -58,10 +66,16 @@ var ExcludeResourceList = []string{"ApplicationSet", "EndpointSlice"}
 // Add creates a new argocd cluster Controller and adds it to the Manager with default RBAC.
 // The Manager will set fields on the Controller and Start it when the Manager is Started.
 func Add(mgr manager.Manager, interval int, resourceDir string) error {
+	token := os.Getenv(AccessToken)
+	if token == "" {
+		token = mgr.GetConfig().BearerToken
+	}
+
 	gitopsSyncResc := &GitOpsSyncResource{
 		Client:      mgr.GetClient(),
 		Interval:    interval,
 		ResourceDir: resourceDir,
+		Token:       token,
 	}
 
 	// Create resourceDir if it does not exist
@@ -166,22 +180,48 @@ func getAllManagedClusterNames(c client.Client) ([]clusterv1.ManagedCluster, err
 }
 
 func (r *GitOpsSyncResource) getSearchUrl() (string, error) {
-	route := &routev1.Route{}
-	if err := r.Client.Get(context.TODO(), types.NamespacedName{Name: "search-api", Namespace: "open-cluster-management"}, route); err != nil {
+	searchNs := os.Getenv("POD_NAMESPACE")
+	if searchNs == "" {
+		searchNs = SearchDefaultNs
+	}
+
+	svc := &corev1.Service{}
+	if err := r.Client.Get(context.TODO(), types.NamespacedName{Name: SearchServiceName, Namespace: searchNs}, svc); err != nil {
 		return "", err
 	}
 
-	return "https://" + route.Spec.Host + "/searchapi/graphql", nil
+	if len(svc.Spec.Ports) == 0 {
+		return "", fmt.Errorf("no ports in service: %v/%v", searchNs, SearchServiceName)
+	}
+
+	targetPort := svc.Spec.Ports[0].TargetPort.IntVal
+	return fmt.Sprintf("https://%v.%v.svc.cluster.local:%v/searchapi/graphql", SearchServiceName, searchNs, targetPort), nil
 }
 
 func (r *GitOpsSyncResource) getArgoAppsFromSearch(cluster, appsetNs, appsetName string) ([]interface{}, []interface{}, error) {
 	klog.Info(fmt.Sprintf("Start getting argo application for cluster: %v, app: %v/%v", cluster, appsetNs, appsetName))
 	defer klog.Info(fmt.Sprintf("Finished getting argo application for cluster: %v, app: %v/%v", cluster, appsetNs, appsetName))
 
-	httpClient, err := rest.HTTPClientFor(ctrl.GetConfigOrDie())
-	if err != nil {
-		return nil, nil, err
+	httpClient := http.DefaultClient
+
+	transport := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		DialContext: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+			DualStack: true,
+		}).DialContext,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // #nosec G402 InsecureSkipVerify conditionally
+			MinVersion:         tls.VersionTLS12,
+		},
 	}
+
+	httpClient.Transport = transport
 
 	routeUrl, err := r.getSearchUrl()
 	if err != nil {
@@ -192,6 +232,7 @@ func (r *GitOpsSyncResource) getArgoAppsFromSearch(cluster, appsetNs, appsetName
 	// Build search body
 	kind := "Application"
 	apigroup := "argoproj.io"
+	limit := int(-1)
 	searchInput := &model.SearchInput{
 		Filters: []*model.SearchFilter{
 			{
@@ -207,6 +248,7 @@ func (r *GitOpsSyncResource) getArgoAppsFromSearch(cluster, appsetNs, appsetName
 				Values:   []*string{&cluster},
 			},
 		},
+		Limit: &limit,
 	}
 
 	if appsetNs != "" && appsetName != "" {
@@ -224,7 +266,16 @@ func (r *GitOpsSyncResource) getArgoAppsFromSearch(cluster, appsetNs, appsetName
 	postBody, _ := json.Marshal(searchQuery)
 	klog.V(1).Infof("search: %v", string(postBody[:]))
 
-	resp, err := httpClient.Post(routeUrl, "application/json", bytes.NewBuffer(postBody))
+	req, err := http.NewRequest("POST", routeUrl, bytes.NewBuffer(postBody))
+	if err != nil {
+		return nil, nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	bearer := "Bearer " + r.Token
+	req.Header.Add("Authorization", bearer)
+	klog.V(1).Infof("Bearer Token: %v", bearer)
+
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		klog.Info(err.Error())
 		return nil, nil, err
