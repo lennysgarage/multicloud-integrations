@@ -34,58 +34,68 @@ func TestCreateOrUpdateAppSetReport(t *testing.T) {
 
 	appset1 := make(map[string]interface{})
 	appset1["namespace"] = "test-NS1"
-	appset1["applicationSet"] = "appset1"
+	appset1["name"] = "app1"
+	appset1["_hostingResource"] = "ApplicationSet/gitops/appset1"
 	appset1["apigroup"] = "argoproj.io"
 	appset1["apiversion"] = "v1alpha1"
 	appset1["_uid"] = "cluster1/abc"
-	appset1["conditionSyncError"] = "something's not right"
-	appset1["conditionSharedResourceWarning"] = "I think it crashed"
+	appset1["_internalCondition.SyncError"] = "something's not right"
+	appset1["_internalCondition.SharedResourceWarning"] = "I think it crashed"
 
-	appset1Resources1 := make(map[string]string)
-	appset1Resources1["SourceUID"] = "cluster1/abc"
-	appset1Resources1["SourceKind"] = "ApplicationSet"
-	appset1Resources1["DestUID"] = "test-NS1/appset1-cluster1-deployment"
-	appset1Resources1["DestKind"] = "apps/v1/Deployment"
+	appset1Resources1 := make(map[string]interface{})
+	appset1Resources1["kind"] = "Service"
+	appset1Resources1["apiversion"] = "v1"
+	appset1Resources1["name"] = "welcome-php"
+	appset1Resources1["namespace"] = "welcome-waves-and-hooks"
 	appset1Resources1["cluster"] = "cluster1"
 
-	appset1Resources2 := make(map[string]string)
-	appset1Resources2["SourceUID"] = "cluster1/abc"
-	appset1Resources2["SourceKind"] = "ApplicationSet"
-	appset1Resources2["DestUID"] = "test-NS1/appset1-cluster1-configmap"
-	appset1Resources2["DestKind"] = "/v1/ConfigMap"
+	appset1Resources2 := make(map[string]interface{})
+	appset1Resources2["apigroup"] = "batch"
+	appset1Resources2["apiversion"] = "v1"
+	appset1Resources2["kind"] = "Job"
+	appset1Resources2["name"] = "welcome-presyncjob"
+	appset1Resources2["namespace"] = "welcome-waves-and-hooks"
 	appset1Resources2["cluster"] = "cluster1"
 
-	appset1Resources3 := make(map[string]string)
-	appset1Resources3["SourceUID"] = "cluster1/abc"
-	appset1Resources3["SourceKind"] = "ApplicationSet"
-	appset1Resources3["DestUID"] = "test-NS1/appset1-cluster2-configmap"
-	appset1Resources3["DestKind"] = "/v1/ConfigMap"
+	appset1Resources3 := make(map[string]interface{})
+	appset1Resources3["kind"] = "Pod"
+	appset1Resources3["apiversion"] = "v1"
+	appset1Resources3["name"] = "welcome-presyncjob-kcbqk"
+	appset1Resources3["namespace"] = "welcome-waves-and-hooks"
 	appset1Resources3["cluster"] = "cluster2"
 
 	related1 := make(map[string]interface{})
-	related1["kind"] = "ApplicationSet"
-	related1["items"] = []map[string]string{appset1Resources1, appset1Resources2, appset1Resources3}
-	appset1["related"] = []interface{}{related1}
+	related1["kind"] = "Service"
+	related1["items"] = []interface{}{appset1Resources1}
+	related2 := make(map[string]interface{})
+	related2["kind"] = "Job"
+	related2["items"] = []interface{}{appset1Resources2}
+	related3 := make(map[string]interface{})
+	related3["kind"] = "Pod"
+	related3["items"] = []interface{}{appset1Resources3}
+	appset1["related"] = []interface{}{related1, related2, related3}
 
+	managedClustersAppNameMap := make(map[string]map[string]string)
 	c1ResourceListMap := getResourceMapList(appset1["related"].([]interface{}), "cluster1")
-	err := synResc.createOrUpdateAppSetReport(appReportsMap, c1ResourceListMap, appset1, "cluster1")
+	err := synResc.createOrUpdateAppSetReportConditions(appReportsMap, appset1, "cluster1", managedClustersAppNameMap)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
-	g.Expect(appReportsMap["test-NS1-appset1"]).NotTo(gomega.BeNil())
-	g.Expect(appReportsMap["test-NS1-appset1"].GetName()).To(gomega.Equal("test-NS1-appset1"))
-	g.Expect(len(appReportsMap["test-NS1-appset1"].Statuses.Resources)).To(gomega.Equal(2))
-	g.Expect(len(appReportsMap["test-NS1-appset1"].Statuses.ClusterConditions)).To(gomega.Equal(1))
-	g.Expect(appReportsMap["test-NS1-appset1"].Statuses.ClusterConditions[0].Cluster).To(gomega.Equal("cluster1"))
-	g.Expect(len(appReportsMap["test-NS1-appset1"].Statuses.ClusterConditions[0].Conditions)).To(gomega.Equal(2))
+	g.Expect(appReportsMap["gitops_appset1"]).NotTo(gomega.BeNil())
+	g.Expect(appReportsMap["gitops_appset1"].GetName()).To(gomega.Equal("gitops_appset1"))
+	g.Expect(len(c1ResourceListMap)).To(gomega.Equal(2))
+	g.Expect(len(appReportsMap["gitops_appset1"].Statuses.ClusterConditions)).To(gomega.Equal(1))
+	g.Expect(appReportsMap["gitops_appset1"].Statuses.ClusterConditions[0].Cluster).To(gomega.Equal("cluster1"))
+	g.Expect(len(appReportsMap["gitops_appset1"].Statuses.ClusterConditions[0].Conditions)).To(gomega.Equal(2))
+	g.Expect(managedClustersAppNameMap["appset1"]["cluster1"], "test-NS1_app1")
 
 	// Add to same appset from cluster2
 	c2ResourceListMap := getResourceMapList(appset1["related"].([]interface{}), "cluster2")
-	err = synResc.createOrUpdateAppSetReport(appReportsMap, c2ResourceListMap, appset1, "cluster2")
+	err = synResc.createOrUpdateAppSetReportConditions(appReportsMap, appset1, "cluster2", managedClustersAppNameMap)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
-	g.Expect(len(appReportsMap["test-NS1-appset1"].Statuses.Resources)).To(gomega.Equal(2))
-	g.Expect(len(appReportsMap["test-NS1-appset1"].Statuses.ClusterConditions)).To(gomega.Equal(2))
-	g.Expect(appReportsMap["test-NS1-appset1"].Statuses.ClusterConditions[0].Cluster).To(gomega.Equal("cluster1"))
-	g.Expect(len(appReportsMap["test-NS1-appset1"].Statuses.ClusterConditions[0].Conditions)).To(gomega.Equal(2))
-	g.Expect(appReportsMap["test-NS1-appset1"].Statuses.ClusterConditions[1].Cluster).To(gomega.Equal("cluster2"))
-	g.Expect(len(appReportsMap["test-NS1-appset1"].Statuses.ClusterConditions[1].Conditions)).To(gomega.Equal(2))
-
+	g.Expect(len(appReportsMap["gitops_appset1"].Statuses.ClusterConditions)).To(gomega.Equal(2))
+	g.Expect(len(c2ResourceListMap)).To(gomega.Equal(1))
+	g.Expect(appReportsMap["gitops_appset1"].Statuses.ClusterConditions[0].Cluster).To(gomega.Equal("cluster1"))
+	g.Expect(len(appReportsMap["gitops_appset1"].Statuses.ClusterConditions[0].Conditions)).To(gomega.Equal(2))
+	g.Expect(appReportsMap["gitops_appset1"].Statuses.ClusterConditions[1].Cluster).To(gomega.Equal("cluster2"))
+	g.Expect(len(appReportsMap["gitops_appset1"].Statuses.ClusterConditions[1].Conditions)).To(gomega.Equal(2))
+	g.Expect(managedClustersAppNameMap["appset1"]["cluster2"], "test-NS1_app1")
 }

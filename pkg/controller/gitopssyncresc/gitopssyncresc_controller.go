@@ -61,7 +61,7 @@ type GitOpsSyncResource struct {
 	Token       string
 }
 
-var ExcludeResourceList = []string{"ApplicationSet", "EndpointSlice"}
+var ExcludeResourceList = []string{"ApplicationSet", "Application", "EndpointSlice", "Pod", "ReplicaSet"}
 
 // Add creates a new argocd cluster Controller and adds it to the Manager with default RBAC.
 // The Manager will set fields on the Controller and Start it when the Manager is Started.
@@ -316,17 +316,24 @@ func (r *GitOpsSyncResource) getArgoAppsFromSearch(cluster, appsetNs, appsetName
 func (r *GitOpsSyncResource) createOrUpdateAppSetReportConditions(appReportsMap map[string]*appsetreport.MulticlusterApplicationSetReport,
 	appsetResource map[string]interface{}, managedClusterName string, managedClusterAppNameMap map[string]map[string]string) error {
 
-	// Skip application that don't belong to an appset
 	appNs := appsetResource["namespace"].(string)
-	appsetName := appsetResource["applicationSet"].(string)
 	appName := appsetResource["name"].(string)
+	hostingAppsetName := appsetResource["_hostingResource"]
 
-	if appsetName == "" {
-		klog.Infof("skip application %v/%v in cluster %v, it does not belong to an appset", appNs, appName, managedClusterName)
+	// Skip application that don't belong to an appset
+	if hostingAppsetName == nil {
+		klog.Infof("skip application %v/%v on cluster %v, it does not belong to an appset", appNs, appName, managedClusterName)
 		return nil
 	}
 
-	reportKey := appNs + "_" + appsetName
+	appsetNsn := strings.Split(hostingAppsetName.(string), "/")
+	if len(appsetNsn) != 3 {
+		err := fmt.Errorf("_hostingResource is not in the correct format: %v", hostingAppsetName)
+		klog.Infof(err.Error())
+		return err
+	}
+
+	reportKey := appsetNsn[1] + "_" + appsetNsn[2]
 	klog.Info(fmt.Sprintf("report key: %v", reportKey))
 	report := appReportsMap[reportKey]
 	if report == nil {
