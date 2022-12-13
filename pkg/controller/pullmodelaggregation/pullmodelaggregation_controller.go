@@ -66,9 +66,14 @@ type OverallStatus struct {
 // AppSetClusterResourceSorter sorts appsetreport resources by name
 type AppSetClusterResourceSorter []appsetreportV1alpha1.ResourceRef
 
-func (a AppSetClusterResourceSorter) Len() int           { return len(a) }
-func (a AppSetClusterResourceSorter) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a AppSetClusterResourceSorter) Less(i, j int) bool { return a[i].Name < a[j].Name }
+func (a AppSetClusterResourceSorter) Len() int      { return len(a) }
+func (a AppSetClusterResourceSorter) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a AppSetClusterResourceSorter) Less(i, j int) bool {
+	if a[i].Name != a[j].Name {
+		return a[i].Name < a[j].Name
+	}
+	return a[i].Kind < a[j].Kind
+}
 
 // AppSetClusterConditionsSorter sorts appsetreport clusterconditions by cluster
 type AppSetClusterConditionsSorter []appsetreportV1alpha1.ClusterCondition

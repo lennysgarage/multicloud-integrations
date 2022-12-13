@@ -176,14 +176,14 @@ func TestReconcilePullModel(t *testing.T) {
 	}))
 	g.Expect(appset.Statuses.Resources).To(Equal([]appsetreportV1alpha1.ResourceRef{
 		{
-			APIVersion: "v1",
-			Kind:       "Service",
+			APIVersion: "apps/v1",
+			Kind:       "Deployment",
 			Name:       "redis-master2",
 			Namespace:  "playback-ns-2",
 		},
 		{
-			APIVersion: "apps/v1",
-			Kind:       "Deployment",
+			APIVersion: "v1",
+			Kind:       "Service",
 			Name:       "redis-master2",
 			Namespace:  "playback-ns-2",
 		},
