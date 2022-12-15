@@ -22,7 +22,7 @@ import (
 
 // MulticlusterApplicationSetReport is the Schema for the MulticlusterApplicationSetReport API.
 // +kubebuilder:resource:scope="Namespaced"
-// +kubebuilder:resource:shortName=appsetreport
+// +kubebuilder:resource:shortName=appsetreport;appsetreports
 type MulticlusterApplicationSetReport struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata"`
