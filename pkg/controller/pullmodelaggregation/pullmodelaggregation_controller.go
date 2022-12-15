@@ -449,11 +449,11 @@ func (r *ReconcilePullModelAggregation) compareAppSetReports(report1, report2 *a
 	return isSame
 }
 
-func loadAppSetCRD(pathname string) (*appsetreportV1alpha1.YAMLAppConditions, error) {
+func loadAppSetCRD(pathname string) (*appsetreportV1alpha1.MulticlusterApplicationSetReport, error) {
 	var (
 		err     error
 		crddata []byte
-		crdobj  appsetreportV1alpha1.YAMLAppConditions
+		crdobj  appsetreportV1alpha1.MulticlusterApplicationSetReport
 	)
 	klog.V(4).Info("Loading appsSet CRD ", pathname)
 
