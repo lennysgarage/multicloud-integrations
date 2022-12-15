@@ -18,14 +18,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// +kubebuilder:subresource:status
-// +kubebuilder:resource:scope="Namespaced"
-// +kubebuilder:resource:shortName=appsetreport
-// +kubebuilder:resource:singular=multiappsetreport,path=multiappsetreports
-
 // +kubebuilder:object:root=true
 
 // MulticlusterApplicationSetReport is the Schema for the MulticlusterApplicationSetReport API.
+// +kubebuilder:resource:scope="Namespaced"
+// +kubebuilder:resource:shortName=appsetreport
 type MulticlusterApplicationSetReport struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata"`

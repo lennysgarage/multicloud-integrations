@@ -12,6 +12,8 @@ spec:
     kind: MulticlusterApplicationSetReport
     listKind: MulticlusterApplicationSetReportList
     plural: multiclusterapplicationsetreports
+    shortNames:
+    - appsetreport
     singular: multiclusterapplicationsetreport
   scope: Namespaced
   versions:
