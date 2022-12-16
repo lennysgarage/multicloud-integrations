@@ -161,6 +161,32 @@ var (
 			Generators: []argov1alpha1.ApplicationSetGenerator{},
 		},
 	}
+	sampleAppset_3 = &argov1alpha1.ApplicationSet{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ApplicationSet",
+			APIVersion: "argoproj.io/v1alpha1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "appset-3",
+			Namespace: "openshift-gitops",
+		},
+		Spec: argov1alpha1.ApplicationSetSpec{
+			Generators: []argov1alpha1.ApplicationSetGenerator{},
+		},
+	}
+	sampleAppset_4 = &argov1alpha1.ApplicationSet{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ApplicationSet",
+			APIVersion: "argoproj.io/v1alpha1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "appset-4",
+			Namespace: "openshift-gitops",
+		},
+		Spec: argov1alpha1.ApplicationSetSpec{
+			Generators: []argov1alpha1.ApplicationSetGenerator{},
+		},
+	}
 
 	sampleAppsetBgd_1 = &argov1alpha1.ApplicationSet{
 		TypeMeta: metav1.TypeMeta{
@@ -218,26 +244,25 @@ var (
 		},
 	}
 
-	bgdp_app_5_data = `
-statuses:
+	bgdp_app_5_data = `statuses:
   resources:
   - apiVersion: apps/v1
-	kind: Deployment
-	name: redis-master5
-	namespace: playback-ns-5
+    kind: Deployment
+    name: redis-master5
+    namespace: playback-ns-5
   - apiVersion: v1
-	kind: Service
-	name: redis-master5
-	namespace: playback-ns-5
+    kind: Service
+    name: redis-master5
+    namespace: playback-ns-5
   clusterConditions:
   - cluster: cluster1
-	conditions:
-	  - type: SyncError
-	  message: "error message 1"
+    conditions:
+    - type: SyncError
+      message: "error message 1"
   - cluster: cluster3
-	conditions:
-	  - type: SyncError
-	  message: "error message 3"`
+    conditions:
+    - type: SyncError
+      message: "error message 3"`
 )
 
 func TestReconcilePullModel(t *testing.T) {
@@ -246,7 +271,6 @@ func TestReconcilePullModel(t *testing.T) {
 	// Setup the Manager and Controller
 	mgr, err := manager.New(cfg, manager.Options{MetricsBindAddress: "0"})
 	g.Expect(err).NotTo(HaveOccurred())
-	g.Expect(argov1alpha1.AddToScheme(mgr.GetScheme())).NotTo(HaveOccurred())
 
 	c = mgr.GetClient()
 
@@ -263,6 +287,8 @@ func TestReconcilePullModel(t *testing.T) {
 	// Create appsets
 	g.Expect(c.Create(ctx, sampleAppset_1.DeepCopy())).NotTo(HaveOccurred())
 	g.Expect(c.Create(ctx, sampleAppset_2.DeepCopy())).NotTo(HaveOccurred())
+	g.Expect(c.Create(ctx, sampleAppset_3.DeepCopy())).NotTo(HaveOccurred())
+	g.Expect(c.Create(ctx, sampleAppset_4.DeepCopy())).NotTo(HaveOccurred())
 	g.Expect(c.Create(ctx, sampleAppsetBgd_1.DeepCopy())).NotTo(HaveOccurred())
 	g.Expect(c.Create(ctx, sampleAppsetBgd_2.DeepCopy())).NotTo(HaveOccurred())
 	g.Expect(c.Create(ctx, sampleAppsetBgd_3.DeepCopy())).NotTo(HaveOccurred())

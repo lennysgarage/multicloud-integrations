@@ -22,6 +22,7 @@ import (
 	"sync"
 	"testing"
 
+	argov1alpha1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -50,6 +51,7 @@ func TestMain(m *testing.M) {
 	appsetreportV1alpha1.AddToScheme(scheme.Scheme)
 	v1.AddToScheme(scheme.Scheme)
 	appsubapi.AddToScheme(scheme.Scheme)
+	argov1alpha1.AddToScheme(scheme.Scheme)
 
 	var err error
 	if cfg, err = t.Start(); err != nil {
@@ -71,34 +73,6 @@ func TestMain(m *testing.M) {
 
 	err = c.Create(context.TODO(), &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{Name: "cluster1"},
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = c.Create(context.TODO(), &corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{Name: "appset-ns-1"},
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = c.Create(context.TODO(), &corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{Name: "appset-ns-2"},
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = c.Create(context.TODO(), &corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{Name: "appset-ns-3"},
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = c.Create(context.TODO(), &corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{Name: "appset-ns-4"},
 	})
 	if err != nil {
 		log.Fatal(err)

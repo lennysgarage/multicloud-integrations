@@ -471,7 +471,7 @@ func (r *ReconcilePullModelAggregation) cleanupReports() error {
 		klog.V(4).Info("Checking file ", appsetName)
 		if len(appsetNamespacedName) > 1 {
 			YAMLFile := types.NamespacedName{Namespace: appsetNamespacedName[0], Name: appsetNamespacedName[1]}
-			klog.V(4).Info("Check if corresponding appset exits for YAML ", YAMLFile)
+			klog.V(4).Info("Check if corresponding appset exits for YAML, ", YAMLFile)
 
 			existingAppset := &argov1alpha1.ApplicationSet{
 				TypeMeta: metav1.TypeMeta{
@@ -513,17 +513,59 @@ func (r *ReconcilePullModelAggregation) cleanupReports() error {
 		}
 	}
 
-	if err := cleanupOrphanReports(); err != nil {
+	if err := r.cleanupOrphanReports(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func cleanupOrphanReports() error {
+func (r *ReconcilePullModelAggregation) cleanupOrphanReports() error {
+	appsetReportList := &appsetreportV1alpha1.MulticlusterApplicationSetReportList{}
 
-	// grab list of multiclusterappsetreports.
-	// loop through list, check if each report has a corresponding appset.
+	if err := r.List(context.TODO(), appsetReportList); err != nil {
+		klog.Errorf("Failed to list multiclusterapplicationsetreports, err: %v", appsetReportList)
+
+		return err
+	}
+
+	for _, appsetReport := range appsetReportList.Items {
+		klog.V(4).Info("Check if corresponding appset exits for Report, ", appsetReport.Namespace, appsetReport.Name)
+
+		existingAppset := &argov1alpha1.ApplicationSet{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "ApplicationSet",
+				APIVersion: "argoproj.io/v1alpha1",
+			},
+		}
+
+		if err := r.Get(context.TODO(), types.NamespacedName{Namespace: appsetReport.Namespace,
+			Name: appsetReport.Name}, existingAppset); err != nil {
+			if errors.IsNotFound(err) {
+				klog.Info("Appset not found for Report ", appsetReport.Namespace, appsetReport.Name)
+
+				// Remove orphaned report
+				existingAppsetReport := &appsetreportV1alpha1.MulticlusterApplicationSetReport{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "MulticlusterApplicationSetReport",
+						APIVersion: "apps.open-cluster-management.io/v1alpha1",
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Namespace: appsetReport.Namespace,
+						Name:      appsetReport.Name,
+					},
+				}
+
+				if err := r.Delete(context.TODO(), existingAppsetReport); err != nil {
+					if errors.IsNotFound(err) {
+						klog.Info("Couldn't find Multiclusterappsetreport to delete ", err)
+					}
+				}
+			} else {
+				klog.Warning("Error retrieving appset ", err)
+			}
+		}
+	}
 
 	return nil
 }
