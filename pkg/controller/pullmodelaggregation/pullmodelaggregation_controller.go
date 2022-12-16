@@ -25,6 +25,7 @@ import (
 	"strings"
 	"time"
 
+	argov1alpha1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"github.com/ghodss/yaml"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -110,6 +111,14 @@ func (r *ReconcilePullModelAggregation) houseKeeping() {
 	}
 
 	klog.Info("Finish aggregating all ArgoCD application manifestworks.")
+
+	klog.Info("Start cleaning all MultiClusterApplicationSet reports.")
+	err = r.cleanupReports()
+	if err != nil {
+		klog.Warning("error while cleaning MultiClusterApplicationSet reports: ", err)
+	}
+
+	klog.Info("Finish cleaning all MultiClusterApplicationSet reports.")
 }
 
 func (r *ReconcilePullModelAggregation) generateAggregation() error {
@@ -417,7 +426,7 @@ func (r *ReconcilePullModelAggregation) compareAppSetReports(report1, report2 *a
 
 		isSame = false
 	} else {
-		// sort new appset resources & clusterConditions by name
+		// sort new appset resources by name then kind
 		sort.Sort(AppSetClusterResourceSorter(report1.Statuses.Resources))
 		sort.Sort(AppSetClusterResourceSorter(report2.Statuses.Resources))
 
@@ -434,7 +443,7 @@ func (r *ReconcilePullModelAggregation) compareAppSetReports(report1, report2 *a
 
 		isSame = false
 	} else {
-		// sort existing appset resources & clusterConditions by name
+		// sort existing appset clusterConditions by name
 		sort.Sort(AppSetClusterConditionsSorter(report1.Statuses.ClusterConditions))
 		sort.Sort(AppSetClusterConditionsSorter(report2.Statuses.ClusterConditions))
 
@@ -447,6 +456,63 @@ func (r *ReconcilePullModelAggregation) compareAppSetReports(report1, report2 *a
 	}
 
 	return isSame
+}
+
+func (r *ReconcilePullModelAggregation) cleanupReports() error {
+	files, err := os.ReadDir(r.ResourceDir)
+	if err != nil {
+		return err
+	}
+
+	for _, file := range files {
+		appsetName := strings.TrimRight(file.Name(), ".yaml")
+		appsetNamespacedName := strings.Split(appsetName, "_")
+
+		klog.V(4).Info("Checking file ", appsetName)
+		if len(appsetNamespacedName) > 1 {
+			YAMLFile := types.NamespacedName{Namespace: appsetNamespacedName[0], Name: appsetNamespacedName[1]}
+			klog.V(4).Info("Check if corresponding appset exits for YAML ", YAMLFile)
+
+			existingAppset := &argov1alpha1.ApplicationSet{
+				TypeMeta: metav1.TypeMeta{
+					Kind:       "ApplicationSet",
+					APIVersion: "argoproj.io/v1alpha1",
+				},
+			}
+
+			if err := r.Get(context.TODO(), YAMLFile, existingAppset); err != nil {
+				klog.Info("Error retrieving appset ", err)
+				if errors.IsNotFound(err) {
+					klog.Info("Appset not found for YAML ", appsetName)
+
+					// Remove report
+					existingAppsetReport := &appsetreportV1alpha1.MulticlusterApplicationSetReport{
+						TypeMeta: metav1.TypeMeta{
+							Kind:       "MulticlusterApplicationSetReport",
+							APIVersion: "apps.open-cluster-management.io/v1alpha1",
+						},
+						ObjectMeta: metav1.ObjectMeta{
+							Namespace: YAMLFile.Namespace,
+							Name:      YAMLFile.Name,
+						},
+					}
+
+					if err := r.Delete(context.TODO(), existingAppsetReport); err != nil {
+						if errors.IsNotFound(err) {
+							klog.Info("Couldn't find Multiclusterappsetreport to delete ", err)
+						}
+					}
+
+					// Remove yaml
+					if err := os.Remove(filepath.Join(r.ResourceDir, file.Name())); err != nil {
+						klog.Warningf("Failed to remove file %v err %v", filepath.Join(r.ResourceDir, file.Name()), err)
+					}
+				}
+			}
+		}
+	}
+
+	return nil
 }
 
 func loadAppSetCRD(pathname string) (*appsetreportV1alpha1.MulticlusterApplicationSetReport, error) {

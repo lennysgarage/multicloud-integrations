@@ -19,12 +19,14 @@ import (
 	"os"
 	"time"
 
+	argov1alpha1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	manifestWorkV1 "open-cluster-management.io/api/work/v1"
 	appsubapi "open-cluster-management.io/multicloud-integrations/pkg/apis"
 	multiclusterappsetreport "open-cluster-management.io/multicloud-integrations/pkg/apis/appsetreport/v1alpha1"
 	"open-cluster-management.io/multicloud-integrations/pkg/controller"
 	appsubutils "open-cluster-management.io/multicloud-integrations/pkg/utils"
 
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -87,6 +89,11 @@ func RunManager() {
 
 	klog.Info("Registering PullModel-Aggregation Components.")
 
+	if err := clientgoscheme.AddToScheme(mgr.GetScheme()); err != nil {
+		klog.Error(err, "")
+		os.Exit(1)
+	}
+
 	// Setup Scheme for all resources
 	if err := appsubapi.AddToScheme(mgr.GetScheme()); err != nil {
 		klog.Error(err, "")
@@ -101,6 +108,12 @@ func RunManager() {
 
 	// Setup Multiclusterappsetreport Scheme for manager
 	if err := multiclusterappsetreport.AddToScheme(mgr.GetScheme()); err != nil {
+		klog.Error(err, "")
+		os.Exit(1)
+	}
+
+	// Setup ApplicationSet Scheme for manager
+	if err := argov1alpha1.AddToScheme(mgr.GetScheme()); err != nil {
 		klog.Error(err, "")
 		os.Exit(1)
 	}

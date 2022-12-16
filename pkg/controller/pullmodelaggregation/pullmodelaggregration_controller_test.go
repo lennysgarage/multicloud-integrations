@@ -19,6 +19,7 @@ import (
 	"testing"
 	"time"
 
+	argov1alpha1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -103,6 +104,90 @@ var (
 			},
 		},
 	}
+
+	sampleAppset_1 = &argov1alpha1.ApplicationSet{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ApplicationSet",
+			APIVersion: "argoproj.io/v1alpha1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "appset-1",
+			Namespace: "appset-ns-1",
+		},
+		Spec: argov1alpha1.ApplicationSetSpec{
+			Generators: []argov1alpha1.ApplicationSetGenerator{},
+		},
+	}
+
+	sampleAppset_2 = &argov1alpha1.ApplicationSet{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ApplicationSet",
+			APIVersion: "argoproj.io/v1alpha1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "appset-2",
+			Namespace: "appset-ns-2",
+		},
+		Spec: argov1alpha1.ApplicationSetSpec{
+			Generators: []argov1alpha1.ApplicationSetGenerator{},
+		},
+	}
+
+	sampleAppsetBgd_1 = &argov1alpha1.ApplicationSet{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ApplicationSet",
+			APIVersion: "argoproj.io/v1alpha1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "bgd-app",
+			Namespace: "cluster1",
+		},
+		Spec: argov1alpha1.ApplicationSetSpec{
+			Generators: []argov1alpha1.ApplicationSetGenerator{},
+		},
+	}
+
+	sampleAppsetBgd_2 = &argov1alpha1.ApplicationSet{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ApplicationSet",
+			APIVersion: "argoproj.io/v1alpha1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "bgd-app-2",
+			Namespace: "cluster1",
+		},
+		Spec: argov1alpha1.ApplicationSetSpec{
+			Generators: []argov1alpha1.ApplicationSetGenerator{},
+		},
+	}
+
+	sampleAppsetBgd_3 = &argov1alpha1.ApplicationSet{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ApplicationSet",
+			APIVersion: "argoproj.io/v1alpha1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "bgd-app-3",
+			Namespace: "cluster1",
+		},
+		Spec: argov1alpha1.ApplicationSetSpec{
+			Generators: []argov1alpha1.ApplicationSetGenerator{},
+		},
+	}
+
+	sampleAppsetBgd_4 = &argov1alpha1.ApplicationSet{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ApplicationSet",
+			APIVersion: "argoproj.io/v1alpha1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "bgd-app-4",
+			Namespace: "cluster1",
+		},
+		Spec: argov1alpha1.ApplicationSetSpec{
+			Generators: []argov1alpha1.ApplicationSetGenerator{},
+		},
+	}
 )
 
 func TestReconcilePullModel(t *testing.T) {
@@ -110,6 +195,8 @@ func TestReconcilePullModel(t *testing.T) {
 
 	// Setup the Manager and Controller
 	mgr, err := manager.New(cfg, manager.Options{MetricsBindAddress: "0"})
+
+	argov1alpha1.AddToScheme(mgr.GetScheme())
 	g.Expect(err).NotTo(HaveOccurred())
 
 	c = mgr.GetClient()
@@ -123,6 +210,14 @@ func TestReconcilePullModel(t *testing.T) {
 		cancel()
 		mgrStopped.Wait()
 	}()
+
+	// Create appsets
+	g.Expect(c.Create(ctx, sampleAppset_1.DeepCopy())).NotTo(HaveOccurred())
+	g.Expect(c.Create(ctx, sampleAppset_2.DeepCopy())).NotTo(HaveOccurred())
+	g.Expect(c.Create(ctx, sampleAppsetBgd_1.DeepCopy())).NotTo(HaveOccurred())
+	g.Expect(c.Create(ctx, sampleAppsetBgd_2.DeepCopy())).NotTo(HaveOccurred())
+	g.Expect(c.Create(ctx, sampleAppsetBgd_3.DeepCopy())).NotTo(HaveOccurred())
+	g.Expect(c.Create(ctx, sampleAppsetBgd_4.DeepCopy())).NotTo(HaveOccurred())
 
 	g.Expect(c.Create(ctx, sampleMulticlusterApplicationSet1.DeepCopy())).NotTo(HaveOccurred())
 	g.Expect(c.Create(ctx, sampleMulticlusterApplicationSet2.DeepCopy())).NotTo(HaveOccurred())

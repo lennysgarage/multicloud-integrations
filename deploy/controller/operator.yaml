@@ -107,4 +107,4 @@ spec:
         volumeMounts:
         - mountPath: /etc/gitops-resources
           name: multicluster-integrations-syncresource
-          readOnly: true
+          readOnly: false
