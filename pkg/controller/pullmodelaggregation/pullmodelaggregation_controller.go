@@ -107,7 +107,7 @@ func (r *ReconcilePullModelAggregation) houseKeeping() {
 	// create or update all MulticlusterApplicationSetReport objects in the appset NS
 	err := r.generateAggregation()
 	if err != nil {
-		klog.Warning("error while generating ArgoCD application aggregation: ", err)
+		klog.Warning("error while generating ArgoCD application aggregation, err: ", err)
 	}
 
 	klog.Info("Finish aggregating all ArgoCD application manifestworks.")
@@ -115,7 +115,7 @@ func (r *ReconcilePullModelAggregation) houseKeeping() {
 	klog.Info("Start cleaning all MultiClusterApplicationSet reports.")
 	err = r.cleanupReports()
 	if err != nil {
-		klog.Warning("error while cleaning MultiClusterApplicationSet reports: ", err)
+		klog.Warning("error while cleaning MultiClusterApplicationSet reports, err: ", err)
 	}
 
 	klog.Info("Finish cleaning all MultiClusterApplicationSet reports.")
@@ -512,6 +512,18 @@ func (r *ReconcilePullModelAggregation) cleanupReports() error {
 			}
 		}
 	}
+
+	if err := cleanupOrphanReports(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func cleanupOrphanReports() error {
+
+	// grab list of multiclusterappsetreports.
+	// loop through list, check if each report has a corresponding appset.
 
 	return nil
 }

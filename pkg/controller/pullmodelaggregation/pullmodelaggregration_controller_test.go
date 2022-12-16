@@ -34,12 +34,14 @@ var (
 	healthy = "Healthy"
 	synced  = "Synced"
 
+	// ManifestWorks
+
 	sampleManifestWork1 = &v1.ManifestWork{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "bgd-app",
+			Name:      "cluster1-bgd-app",
 			Namespace: "cluster1",
 			Annotations: map[string]string{
-				"apps.open-cluster-management.io/hosting-applicationset": "appset-ns-1/appset-1",
+				"apps.open-cluster-management.io/hosting-applicationset": "openshift-gitops/appset-1",
 			},
 			Labels: map[string]string{
 				"apps.open-cluster-management.io/application-set": "true",
@@ -49,10 +51,10 @@ var (
 
 	sampleManifestWork2 = &v1.ManifestWork{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "bgd-app-2",
+			Name:      "cluster1-bgd-app-2",
 			Namespace: "cluster1",
 			Annotations: map[string]string{
-				"apps.open-cluster-management.io/hosting-applicationset": "appset-ns-2/appset-2",
+				"apps.open-cluster-management.io/hosting-applicationset": "openshift-gitops/appset-2",
 			},
 			Labels: map[string]string{
 				"apps.open-cluster-management.io/application-set": "true",
@@ -62,10 +64,10 @@ var (
 
 	sampleManifestWork3 = &v1.ManifestWork{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "bgd-app-3",
+			Name:      "cluster1-bgd-app-3",
 			Namespace: "cluster1",
 			Annotations: map[string]string{
-				"apps.open-cluster-management.io/hosting-applicationset": "appset-ns-3/appset-3",
+				"apps.open-cluster-management.io/hosting-applicationset": "openshift-gitops/appset-3",
 			},
 			Labels: map[string]string{
 				"apps.open-cluster-management.io/application-set": "true",
@@ -75,10 +77,10 @@ var (
 
 	sampleManifestWork4 = &v1.ManifestWork{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "bgd-app-4",
+			Name:      "cluster1-bgd-app-4",
 			Namespace: "cluster1",
 			Annotations: map[string]string{
-				"apps.open-cluster-management.io/hosting-applicationset": "appset-ns-4/appset-4",
+				"apps.open-cluster-management.io/hosting-applicationset": "openshift-gitops/appset-4",
 			},
 			Labels: map[string]string{
 				"apps.open-cluster-management.io/application-set": "true",
@@ -87,10 +89,10 @@ var (
 	}
 	sampleManifestWork5 = &v1.ManifestWork{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "bgd-app-5",
+			Name:      "cluster1-bgd-app-5",
 			Namespace: "cluster1",
 			Annotations: map[string]string{
-				"apps.open-cluster-management.io/hosting-applicationset": "appset-ns-5/appset-5",
+				"apps.open-cluster-management.io/hosting-applicationset": "openshift-gitops/bgd-app-5",
 			},
 			Labels: map[string]string{
 				"apps.open-cluster-management.io/application-set": "true",
@@ -98,12 +100,14 @@ var (
 		},
 	}
 
+	// Reports
+
 	sampleMulticlusterApplicationSetReport1 = &appsetreportV1alpha1.MulticlusterApplicationSetReport{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "appset-1",
-			Namespace: "appset-ns-1",
+			Namespace: "openshift-gitops",
 			Labels: map[string]string{
-				"apps.open-cluster-management.io/hosting-applicationset": "appset-ns-1.appset-1",
+				"apps.open-cluster-management.io/hosting-applicationset": "openshift-gitops.appset-1",
 			},
 		},
 	}
@@ -111,9 +115,9 @@ var (
 	sampleMulticlusterApplicationSetReport2 = &appsetreportV1alpha1.MulticlusterApplicationSetReport{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "appset-2",
-			Namespace: "appset-ns-2",
+			Namespace: "openshift-gitops",
 			Labels: map[string]string{
-				"apps.open-cluster-management.io/hosting-applicationset": "appset-ns-2.appset-2",
+				"apps.open-cluster-management.io/hosting-applicationset": "openshift-gitops.appset-2",
 			},
 		},
 	}
@@ -121,12 +125,14 @@ var (
 	sampleMulticlusterApplicationSetReport_bgd_5 = &appsetreportV1alpha1.MulticlusterApplicationSetReport{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "bgd-app-5",
-			Namespace: "cluster1",
+			Namespace: "openshift-gitops",
 			Labels: map[string]string{
-				"apps.open-cluster-management.io/hosting-applicationset": "cluster1.bgdp-app-5",
+				"apps.open-cluster-management.io/hosting-applicationset": "openshift-gitops.bgd-app-5",
 			},
 		},
 	}
+
+	// Appsets
 
 	sampleAppset_1 = &argov1alpha1.ApplicationSet{
 		TypeMeta: metav1.TypeMeta{
@@ -135,7 +141,7 @@ var (
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "appset-1",
-			Namespace: "appset-ns-1",
+			Namespace: "openshift-gitops",
 		},
 		Spec: argov1alpha1.ApplicationSetSpec{
 			Generators: []argov1alpha1.ApplicationSetGenerator{},
@@ -149,7 +155,7 @@ var (
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "appset-2",
-			Namespace: "appset-ns-2",
+			Namespace: "openshift-gitops",
 		},
 		Spec: argov1alpha1.ApplicationSetSpec{
 			Generators: []argov1alpha1.ApplicationSetGenerator{},
@@ -163,7 +169,7 @@ var (
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "bgd-app",
-			Namespace: "cluster1",
+			Namespace: "openshift-gitops",
 		},
 		Spec: argov1alpha1.ApplicationSetSpec{
 			Generators: []argov1alpha1.ApplicationSetGenerator{},
@@ -177,7 +183,7 @@ var (
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "bgd-app-2",
-			Namespace: "cluster1",
+			Namespace: "openshift-gitops",
 		},
 		Spec: argov1alpha1.ApplicationSetSpec{
 			Generators: []argov1alpha1.ApplicationSetGenerator{},
@@ -191,7 +197,7 @@ var (
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "bgd-app-3",
-			Namespace: "cluster1",
+			Namespace: "openshift-gitops",
 		},
 		Spec: argov1alpha1.ApplicationSetSpec{
 			Generators: []argov1alpha1.ApplicationSetGenerator{},
@@ -205,7 +211,7 @@ var (
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "bgd-app-4",
-			Namespace: "cluster1",
+			Namespace: "openshift-gitops",
 		},
 		Spec: argov1alpha1.ApplicationSetSpec{
 			Generators: []argov1alpha1.ApplicationSetGenerator{},
@@ -274,7 +280,7 @@ func TestReconcilePullModel(t *testing.T) {
 	g.Expect(c.Create(ctx, sampleManifestWork5.DeepCopy())).NotTo(HaveOccurred())
 
 	// create bgd-app-5 yaml
-	f, err := os.Create("../../../examples/cluster1_bgd-app-5.yaml")
+	f, err := os.Create("../../../examples/openshift-gitops_bgd-app-5.yaml")
 	g.Expect(err).NotTo(HaveOccurred())
 
 	defer f.Close()
@@ -286,7 +292,7 @@ func TestReconcilePullModel(t *testing.T) {
 
 	// Test 1: sycned and healthy with manifestwork and yaml
 	mw := &v1.ManifestWork{}
-	g.Expect(c.Get(ctx, types.NamespacedName{Namespace: "cluster1", Name: "bgd-app"}, mw)).NotTo(HaveOccurred())
+	g.Expect(c.Get(ctx, types.NamespacedName{Namespace: "cluster1", Name: "cluster1-bgd-app"}, mw)).NotTo(HaveOccurred())
 
 	// Update manifestwork to be healthy & synced.
 	newMw := mw.DeepCopy()
@@ -307,15 +313,15 @@ func TestReconcilePullModel(t *testing.T) {
 	g.Expect(c.Status().Update(ctx, newMw)).NotTo(HaveOccurred())
 	time.Sleep(4 * time.Second)
 
-	g.Expect(c.Get(ctx, types.NamespacedName{Namespace: "cluster1", Name: "bgd-app"}, mw)).NotTo(HaveOccurred())
+	g.Expect(c.Get(ctx, types.NamespacedName{Namespace: "cluster1", Name: "cluster1-bgd-app"}, mw)).NotTo(HaveOccurred())
 	newMw = mw.DeepCopy()
 	g.Expect(newMw.Status.ResourceStatus.Manifests[0].StatusFeedbacks.Values).To(Equal([]v1.FeedbackValue{
 		{Name: "healthStatus", Value: v1.FieldValue{Type: v1.String, String: &healthy}},
 		{Name: "syncStatus", Value: v1.FieldValue{Type: v1.String, String: &synced}}}))
 
-	appset := &appsetreportV1alpha1.MulticlusterApplicationSetReport{}
-	g.Expect(c.Get(ctx, types.NamespacedName{Name: "appset-1", Namespace: "appset-ns-1"}, appset)).NotTo(HaveOccurred())
-	g.Expect(appset.Statuses.Summary).To(Equal(appsetreportV1alpha1.ReportSummary{
+	appsetReport := &appsetreportV1alpha1.MulticlusterApplicationSetReport{}
+	g.Expect(c.Get(ctx, types.NamespacedName{Namespace: "openshift-gitops", Name: "appset-1"}, appsetReport)).NotTo(HaveOccurred())
+	g.Expect(appsetReport.Statuses.Summary).To(Equal(appsetreportV1alpha1.ReportSummary{
 		Synced:     "1",
 		NotSynced:  "0",
 		Healthy:    "1",
@@ -323,7 +329,7 @@ func TestReconcilePullModel(t *testing.T) {
 		InProgress: "0",
 		Clusters:   "1",
 	}))
-	g.Expect(appset.Statuses.Resources).To(Equal([]appsetreportV1alpha1.ResourceRef{
+	g.Expect(appsetReport.Statuses.Resources).To(Equal([]appsetreportV1alpha1.ResourceRef{
 		{
 			APIVersion: "apps/v1",
 			Kind:       "Deployment",
@@ -337,7 +343,7 @@ func TestReconcilePullModel(t *testing.T) {
 			Namespace:  "playback-ns-2",
 		},
 	}))
-	g.Expect(appset.Statuses.ClusterConditions).To(Equal([]appsetreportV1alpha1.ClusterCondition{
+	g.Expect(appsetReport.Statuses.ClusterConditions).To(Equal([]appsetreportV1alpha1.ClusterCondition{
 		{
 			Cluster:      "cluster1",
 			SyncStatus:   "Synced",
@@ -353,9 +359,9 @@ func TestReconcilePullModel(t *testing.T) {
 	}))
 
 	// Test 2: no resource yaml but MulticlusterApplicationSetReport exists beforehand
-	g.Expect(c.Get(ctx, types.NamespacedName{Name: "appset-2", Namespace: "appset-ns-2"}, appset)).NotTo(HaveOccurred())
-	g.Expect(appset.Statuses.Resources).To(BeNil())
-	g.Expect(appset.Statuses.ClusterConditions).To(Equal([]appsetreportV1alpha1.ClusterCondition{
+	g.Expect(c.Get(ctx, types.NamespacedName{Namespace: "openshift-gitops", Name: "appset-2"}, appsetReport)).NotTo(HaveOccurred())
+	g.Expect(appsetReport.Statuses.Resources).To(BeNil())
+	g.Expect(appsetReport.Statuses.ClusterConditions).To(Equal([]appsetreportV1alpha1.ClusterCondition{
 		{
 			Cluster:      "cluster1",
 			SyncStatus:   "Unknown",
@@ -365,9 +371,9 @@ func TestReconcilePullModel(t *testing.T) {
 	}))
 
 	// Test 3: no resource yaml but MulticlusterApplicationSetReport does not exist beforehand
-	g.Expect(c.Get(ctx, types.NamespacedName{Name: "appset-3", Namespace: "appset-ns-3"}, appset)).NotTo(HaveOccurred())
-	g.Expect(appset.Statuses.Resources).To(BeNil())
-	g.Expect(appset.Statuses.ClusterConditions).To(Equal([]appsetreportV1alpha1.ClusterCondition{
+	g.Expect(c.Get(ctx, types.NamespacedName{Namespace: "openshift-gitops", Name: "appset-3"}, appsetReport)).NotTo(HaveOccurred())
+	g.Expect(appsetReport.Statuses.Resources).To(BeNil())
+	g.Expect(appsetReport.Statuses.ClusterConditions).To(Equal([]appsetreportV1alpha1.ClusterCondition{
 		{
 			Cluster:      "cluster1",
 			SyncStatus:   "Unknown",
@@ -378,7 +384,7 @@ func TestReconcilePullModel(t *testing.T) {
 
 	time.Sleep(4 * time.Second)
 	// Test 4: Update manifestwork to be synced & progressing. No existing MulticlusterApplicationSetReport
-	g.Expect(c.Get(ctx, types.NamespacedName{Namespace: "cluster1", Name: "bgd-app-4"}, mw)).NotTo(HaveOccurred())
+	g.Expect(c.Get(ctx, types.NamespacedName{Namespace: "cluster1", Name: "cluster1-bgd-app-4"}, mw)).NotTo(HaveOccurred())
 
 	newMw = mw.DeepCopy()
 	progressing := "Progressing"
@@ -399,15 +405,15 @@ func TestReconcilePullModel(t *testing.T) {
 	g.Expect(c.Status().Update(ctx, newMw)).NotTo(HaveOccurred())
 	time.Sleep(4 * time.Second)
 
-	g.Expect(c.Get(ctx, types.NamespacedName{Namespace: "cluster1", Name: "bgd-app-4"}, mw)).NotTo(HaveOccurred())
+	g.Expect(c.Get(ctx, types.NamespacedName{Namespace: "cluster1", Name: "cluster1-bgd-app-4"}, mw)).NotTo(HaveOccurred())
 	newMw = mw.DeepCopy()
 	g.Expect(newMw.Status.ResourceStatus.Manifests[0].StatusFeedbacks.Values).To(Equal([]v1.FeedbackValue{
 		{Name: "healthStatus", Value: v1.FieldValue{Type: v1.String, String: &progressing}},
 		{Name: "syncStatus", Value: v1.FieldValue{Type: v1.String, String: &synced}}}))
 
-	g.Expect(c.Get(ctx, types.NamespacedName{Name: "appset-4", Namespace: "appset-ns-4"}, appset)).NotTo(HaveOccurred())
-	g.Expect(appset.Statuses.Resources).To(BeNil())
-	g.Expect(appset.Statuses.ClusterConditions).To(Equal([]appsetreportV1alpha1.ClusterCondition{
+	g.Expect(c.Get(ctx, types.NamespacedName{Namespace: "openshift-gitops", Name: "appset-4"}, appsetReport)).NotTo(HaveOccurred())
+	g.Expect(appsetReport.Statuses.Resources).To(BeNil())
+	g.Expect(appsetReport.Statuses.ClusterConditions).To(Equal([]appsetreportV1alpha1.ClusterCondition{
 		{
 			Cluster:      "cluster1",
 			SyncStatus:   "Synced",

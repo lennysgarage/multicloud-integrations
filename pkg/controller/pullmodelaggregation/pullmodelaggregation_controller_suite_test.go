@@ -63,6 +63,13 @@ func TestMain(m *testing.M) {
 	}
 
 	err = c.Create(context.TODO(), &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{Name: "openshift-gitops"},
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = c.Create(context.TODO(), &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{Name: "cluster1"},
 	})
 	if err != nil {
