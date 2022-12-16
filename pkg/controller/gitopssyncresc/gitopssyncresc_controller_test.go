@@ -39,8 +39,8 @@ func TestCreateOrUpdateAppSetReport(t *testing.T) {
 	appset1["apigroup"] = "argoproj.io"
 	appset1["apiversion"] = "v1alpha1"
 	appset1["_uid"] = "cluster1/abc"
-	appset1["_internalCondition.SyncError"] = "something's not right"
-	appset1["_internalCondition.SharedResourceWarning"] = "I think it crashed"
+	appset1["_condition.SyncError"] = "something's not right"
+	appset1["_condition.SharedResourceWarning"] = "I think it crashed"
 
 	appset1Resources1 := make(map[string]interface{})
 	appset1Resources1["kind"] = "Service"
@@ -58,7 +58,7 @@ func TestCreateOrUpdateAppSetReport(t *testing.T) {
 	appset1Resources2["cluster"] = "cluster1"
 
 	appset1Resources3 := make(map[string]interface{})
-	appset1Resources3["kind"] = "Pod"
+	appset1Resources3["kind"] = "Deployment"
 	appset1Resources3["apiversion"] = "v1"
 	appset1Resources3["name"] = "welcome-presyncjob-kcbqk"
 	appset1Resources3["namespace"] = "welcome-waves-and-hooks"
@@ -71,7 +71,7 @@ func TestCreateOrUpdateAppSetReport(t *testing.T) {
 	related2["kind"] = "Job"
 	related2["items"] = []interface{}{appset1Resources2}
 	related3 := make(map[string]interface{})
-	related3["kind"] = "Pod"
+	related3["kind"] = "Deployment"
 	related3["items"] = []interface{}{appset1Resources3}
 	appset1["related"] = []interface{}{related1, related2, related3}
 

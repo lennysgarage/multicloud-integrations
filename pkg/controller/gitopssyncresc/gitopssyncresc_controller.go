@@ -348,8 +348,8 @@ func (r *GitOpsSyncResource) createOrUpdateAppSetReportConditions(appReportsMap 
 	}
 
 	reportConditions := make([]appsetreport.Condition, 0)
-	eCond, _ := regexp.Compile("_internalCondition.*Error")
-	wCond, _ := regexp.Compile("_internalCondition.*Warning")
+	eCond, _ := regexp.Compile("_condition.*Error")
+	wCond, _ := regexp.Compile("_condition.*Warning")
 	for k, v := range appsetResource {
 		// Add app name to map
 		clusterAppsetNameMap := managedClusterAppNameMap[reportKey]
