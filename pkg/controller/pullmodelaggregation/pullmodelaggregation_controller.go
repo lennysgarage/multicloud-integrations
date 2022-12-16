@@ -481,7 +481,6 @@ func (r *ReconcilePullModelAggregation) cleanupReports() error {
 			}
 
 			if err := r.Get(context.TODO(), YAMLFile, existingAppset); err != nil {
-				klog.Info("Error retrieving appset ", err)
 				if errors.IsNotFound(err) {
 					klog.Info("Appset not found for YAML ", appsetName)
 
@@ -507,6 +506,8 @@ func (r *ReconcilePullModelAggregation) cleanupReports() error {
 					if err := os.Remove(filepath.Join(r.ResourceDir, file.Name())); err != nil {
 						klog.Warningf("Failed to remove file %v err %v", filepath.Join(r.ResourceDir, file.Name()), err)
 					}
+				} else {
+					klog.Warning("Error retrieving appset ", err)
 				}
 			}
 		}

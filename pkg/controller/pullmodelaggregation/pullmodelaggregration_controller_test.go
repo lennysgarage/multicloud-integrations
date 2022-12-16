@@ -16,6 +16,7 @@ package pullmodelaggregation
 
 import (
 	"context"
+	"os"
 	"testing"
 	"time"
 
@@ -84,8 +85,20 @@ var (
 			},
 		},
 	}
+	sampleManifestWork5 = &v1.ManifestWork{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "bgd-app-5",
+			Namespace: "cluster1",
+			Annotations: map[string]string{
+				"apps.open-cluster-management.io/hosting-applicationset": "appset-ns-5/appset-5",
+			},
+			Labels: map[string]string{
+				"apps.open-cluster-management.io/application-set": "true",
+			},
+		},
+	}
 
-	sampleMulticlusterApplicationSet1 = &appsetreportV1alpha1.MulticlusterApplicationSetReport{
+	sampleMulticlusterApplicationSetReport1 = &appsetreportV1alpha1.MulticlusterApplicationSetReport{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "appset-1",
 			Namespace: "appset-ns-1",
@@ -95,12 +108,22 @@ var (
 		},
 	}
 
-	sampleMulticlusterApplicationSet2 = &appsetreportV1alpha1.MulticlusterApplicationSetReport{
+	sampleMulticlusterApplicationSetReport2 = &appsetreportV1alpha1.MulticlusterApplicationSetReport{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "appset-2",
 			Namespace: "appset-ns-2",
 			Labels: map[string]string{
 				"apps.open-cluster-management.io/hosting-applicationset": "appset-ns-2.appset-2",
+			},
+		},
+	}
+
+	sampleMulticlusterApplicationSetReport_bgd_5 = &appsetreportV1alpha1.MulticlusterApplicationSetReport{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "bgd-app-5",
+			Namespace: "cluster1",
+			Labels: map[string]string{
+				"apps.open-cluster-management.io/hosting-applicationset": "cluster1.bgdp-app-5",
 			},
 		},
 	}
@@ -188,6 +211,27 @@ var (
 			Generators: []argov1alpha1.ApplicationSetGenerator{},
 		},
 	}
+
+	bgdp_app_5_data = `
+statuses:
+  resources:
+  - apiVersion: apps/v1
+	kind: Deployment
+	name: redis-master5
+	namespace: playback-ns-5
+  - apiVersion: v1
+	kind: Service
+	name: redis-master5
+	namespace: playback-ns-5
+  clusterConditions:
+  - cluster: cluster1
+	conditions:
+	  - type: SyncError
+	  message: "error message 1"
+  - cluster: cluster3
+	conditions:
+	  - type: SyncError
+	  message: "error message 3"`
 )
 
 func TestReconcilePullModel(t *testing.T) {
@@ -195,9 +239,8 @@ func TestReconcilePullModel(t *testing.T) {
 
 	// Setup the Manager and Controller
 	mgr, err := manager.New(cfg, manager.Options{MetricsBindAddress: "0"})
-
-	argov1alpha1.AddToScheme(mgr.GetScheme())
 	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(argov1alpha1.AddToScheme(mgr.GetScheme())).NotTo(HaveOccurred())
 
 	c = mgr.GetClient()
 
@@ -219,14 +262,25 @@ func TestReconcilePullModel(t *testing.T) {
 	g.Expect(c.Create(ctx, sampleAppsetBgd_3.DeepCopy())).NotTo(HaveOccurred())
 	g.Expect(c.Create(ctx, sampleAppsetBgd_4.DeepCopy())).NotTo(HaveOccurred())
 
-	g.Expect(c.Create(ctx, sampleMulticlusterApplicationSet1.DeepCopy())).NotTo(HaveOccurred())
-	g.Expect(c.Create(ctx, sampleMulticlusterApplicationSet2.DeepCopy())).NotTo(HaveOccurred())
+	g.Expect(c.Create(ctx, sampleMulticlusterApplicationSetReport1.DeepCopy())).NotTo(HaveOccurred())
+	g.Expect(c.Create(ctx, sampleMulticlusterApplicationSetReport2.DeepCopy())).NotTo(HaveOccurred())
+	g.Expect(c.Create(ctx, sampleMulticlusterApplicationSetReport_bgd_5.DeepCopy())).NotTo(HaveOccurred())
 
 	// need to create a manifestwork
 	g.Expect(c.Create(ctx, sampleManifestWork1.DeepCopy())).NotTo(HaveOccurred())
 	g.Expect(c.Create(ctx, sampleManifestWork2.DeepCopy())).NotTo(HaveOccurred())
 	g.Expect(c.Create(ctx, sampleManifestWork3.DeepCopy())).NotTo(HaveOccurred())
 	g.Expect(c.Create(ctx, sampleManifestWork4.DeepCopy())).NotTo(HaveOccurred())
+	g.Expect(c.Create(ctx, sampleManifestWork5.DeepCopy())).NotTo(HaveOccurred())
+
+	// create bgd-app-5 yaml
+	f, err := os.Create("../../../examples/cluster1_bgd-app-5.yaml")
+	g.Expect(err).NotTo(HaveOccurred())
+
+	defer f.Close()
+
+	_, err = f.WriteString(bgdp_app_5_data)
+	g.Expect(err).NotTo(HaveOccurred())
 
 	time.Sleep(4 * time.Second)
 
