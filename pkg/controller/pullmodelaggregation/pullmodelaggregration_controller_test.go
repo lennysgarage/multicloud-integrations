@@ -122,7 +122,7 @@ var (
 		},
 	}
 
-	sampleMulticlusterApplicationSetReport_bgd_5 = &appsetreportV1alpha1.MulticlusterApplicationSetReport{
+	sampleMulticlusterApplicationSetReportBgd5 = &appsetreportV1alpha1.MulticlusterApplicationSetReport{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "bgd-app-5",
 			Namespace: "openshift-gitops",
@@ -134,7 +134,7 @@ var (
 
 	// Appsets
 
-	sampleAppset_1 = &argov1alpha1.ApplicationSet{
+	sampleAppset1 = &argov1alpha1.ApplicationSet{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ApplicationSet",
 			APIVersion: "argoproj.io/v1alpha1",
@@ -148,7 +148,7 @@ var (
 		},
 	}
 
-	sampleAppset_2 = &argov1alpha1.ApplicationSet{
+	sampleAppset2 = &argov1alpha1.ApplicationSet{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ApplicationSet",
 			APIVersion: "argoproj.io/v1alpha1",
@@ -161,7 +161,7 @@ var (
 			Generators: []argov1alpha1.ApplicationSetGenerator{},
 		},
 	}
-	sampleAppset_3 = &argov1alpha1.ApplicationSet{
+	sampleAppset3 = &argov1alpha1.ApplicationSet{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ApplicationSet",
 			APIVersion: "argoproj.io/v1alpha1",
@@ -174,7 +174,7 @@ var (
 			Generators: []argov1alpha1.ApplicationSetGenerator{},
 		},
 	}
-	sampleAppset_4 = &argov1alpha1.ApplicationSet{
+	sampleAppset4 = &argov1alpha1.ApplicationSet{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ApplicationSet",
 			APIVersion: "argoproj.io/v1alpha1",
@@ -188,7 +188,7 @@ var (
 		},
 	}
 
-	sampleAppsetBgd_1 = &argov1alpha1.ApplicationSet{
+	sampleAppsetBgd1 = &argov1alpha1.ApplicationSet{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ApplicationSet",
 			APIVersion: "argoproj.io/v1alpha1",
@@ -202,7 +202,7 @@ var (
 		},
 	}
 
-	sampleAppsetBgd_2 = &argov1alpha1.ApplicationSet{
+	sampleAppsetBgd2 = &argov1alpha1.ApplicationSet{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ApplicationSet",
 			APIVersion: "argoproj.io/v1alpha1",
@@ -216,7 +216,7 @@ var (
 		},
 	}
 
-	sampleAppsetBgd_3 = &argov1alpha1.ApplicationSet{
+	sampleAppsetBgd3 = &argov1alpha1.ApplicationSet{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ApplicationSet",
 			APIVersion: "argoproj.io/v1alpha1",
@@ -230,7 +230,7 @@ var (
 		},
 	}
 
-	sampleAppsetBgd_4 = &argov1alpha1.ApplicationSet{
+	sampleAppsetBgd4 = &argov1alpha1.ApplicationSet{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ApplicationSet",
 			APIVersion: "argoproj.io/v1alpha1",
@@ -244,7 +244,7 @@ var (
 		},
 	}
 
-	bgdp_app_5_data = `statuses:
+	bgdAppData5 = `statuses:
   resources:
   - apiVersion: apps/v1
     kind: Deployment
@@ -285,18 +285,18 @@ func TestReconcilePullModel(t *testing.T) {
 	}()
 
 	// Create appsets
-	g.Expect(c.Create(ctx, sampleAppset_1.DeepCopy())).NotTo(HaveOccurred())
-	g.Expect(c.Create(ctx, sampleAppset_2.DeepCopy())).NotTo(HaveOccurred())
-	g.Expect(c.Create(ctx, sampleAppset_3.DeepCopy())).NotTo(HaveOccurred())
-	g.Expect(c.Create(ctx, sampleAppset_4.DeepCopy())).NotTo(HaveOccurred())
-	g.Expect(c.Create(ctx, sampleAppsetBgd_1.DeepCopy())).NotTo(HaveOccurred())
-	g.Expect(c.Create(ctx, sampleAppsetBgd_2.DeepCopy())).NotTo(HaveOccurred())
-	g.Expect(c.Create(ctx, sampleAppsetBgd_3.DeepCopy())).NotTo(HaveOccurred())
-	g.Expect(c.Create(ctx, sampleAppsetBgd_4.DeepCopy())).NotTo(HaveOccurred())
+	g.Expect(c.Create(ctx, sampleAppset1.DeepCopy())).NotTo(HaveOccurred())
+	g.Expect(c.Create(ctx, sampleAppset2.DeepCopy())).NotTo(HaveOccurred())
+	g.Expect(c.Create(ctx, sampleAppset3.DeepCopy())).NotTo(HaveOccurred())
+	g.Expect(c.Create(ctx, sampleAppset4.DeepCopy())).NotTo(HaveOccurred())
+	g.Expect(c.Create(ctx, sampleAppsetBgd1.DeepCopy())).NotTo(HaveOccurred())
+	g.Expect(c.Create(ctx, sampleAppsetBgd2.DeepCopy())).NotTo(HaveOccurred())
+	g.Expect(c.Create(ctx, sampleAppsetBgd3.DeepCopy())).NotTo(HaveOccurred())
+	g.Expect(c.Create(ctx, sampleAppsetBgd4.DeepCopy())).NotTo(HaveOccurred())
 
 	g.Expect(c.Create(ctx, sampleMulticlusterApplicationSetReport1.DeepCopy())).NotTo(HaveOccurred())
 	g.Expect(c.Create(ctx, sampleMulticlusterApplicationSetReport2.DeepCopy())).NotTo(HaveOccurred())
-	g.Expect(c.Create(ctx, sampleMulticlusterApplicationSetReport_bgd_5.DeepCopy())).NotTo(HaveOccurred())
+	g.Expect(c.Create(ctx, sampleMulticlusterApplicationSetReportBgd5.DeepCopy())).NotTo(HaveOccurred())
 
 	// need to create a manifestwork
 	g.Expect(c.Create(ctx, sampleManifestWork1.DeepCopy())).NotTo(HaveOccurred())
@@ -311,7 +311,7 @@ func TestReconcilePullModel(t *testing.T) {
 
 	defer f.Close()
 
-	_, err = f.WriteString(bgdp_app_5_data)
+	_, err = f.WriteString(bgdAppData5)
 	g.Expect(err).NotTo(HaveOccurred())
 
 	time.Sleep(4 * time.Second)
